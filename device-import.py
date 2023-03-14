@@ -13,6 +13,8 @@ from hw import HardwareInfo
 
 from device_type_template import DeviceType
 
+import re
+
 def find_vendor(dmi, vendors):
     '''
     Find the vendor from the dmi output in the list of vendors provided by the device-type library repo.
@@ -100,6 +102,9 @@ def main():
     print('Total RAM:\t{} GB'.format(dmi.total_ram()))
     print('# DIMM Slots:\t', dmi.total_dimm_slots())
     print('Chassis Type:\t', dmi.chassis_type())
+    my_device.manufacturer = dmi.manufacturer()
+    my_device.model = dmi.model()
+    my_device.slug = re.sub('\W+', '-', my_device.model.lower())
 
     netbox = NetBox(settings)
     files, vendors = settings.dtl_repo.get_devices(
@@ -114,8 +119,8 @@ def main():
     print("Debug: -----")
     match = boolVendorMatch(dmi, vendors)
     print(f'Vendor Match: {match}')
-
-    with open('my_device.yaml', 'w') as file:
+    filename = HardwareInfo().node + '.yaml'
+    with open(filename, 'w') as file:
         yaml.dump(my_device.getYAML(), file, sort_keys=False, explicit_start=True)
     print('YAML file created')
     if netbox.modules:
