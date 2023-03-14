@@ -1,7 +1,7 @@
 import yaml
 
 class DeviceType:
-    def __init__(self, manufacturer: str = "TODO", model: str = "TODO", slug: str = "TODO", airflow: str = "front-to-rear", weight: float = 0, weight_unit: str = "kg", u_height: int = 0, subdevice_role: str = "child", device_bays: list = [], interfaces: list = [], inventory_items: list = []):
+    def __init__(self, manufacturer: str = "TODO", model: str = "TODO", slug: str = "TODO", airflow: str = "front-to-rear", weight: float = 0, weight_unit: str = "kg", u_height: int = 0, subdevice_role: str = "", device_bays: list = [], interfaces: list = [], inventory_items: list = []):
         self.manufacturer = manufacturer
         self.model = model
         self.slug = slug
