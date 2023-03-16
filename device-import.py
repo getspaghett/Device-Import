@@ -44,7 +44,7 @@ def boolVendorMatch(dmi, vendors) -> bool:
     dmi_vendor = dmi.manufacturer().lower()
     match = False
     for vendor in vendors:
-        if dmi_vendor in (vendor.get('name')).lower():
+        if dmi_vendor == (vendor.get('name')).lower():
             match = True
             break
     return match
@@ -57,7 +57,7 @@ def getMatchedVendor(dmi, vendors) -> str:
     matchedVendor = ""
     match = False
     for vendor in vendors:
-        if dmi_vendor in (vendor.get('name')).lower():
+        if dmi_vendor == (vendor.get('name')).lower():
             match = True
             matchedVendor = vendor.get('name')
             break
@@ -85,6 +85,38 @@ def getPossibleMatches(dmi, vendors) -> list:
         print(f'Possible matches: {possible_matches}')
     return possible_matches
 
+def saveToYAML(my_device_type: DeviceType = None, filename: str = ''):
+    assert isinstance(my_device_type, DeviceType)
+    if filename == '':
+        filename = HardwareInfo().node + '.yaml'
+    with open(filename, 'w') as file:
+        yaml.dump(my_device_type.getYAML(), file, sort_keys=False, explicit_start=True)
+    print('YAML file created')
+
+def checkVendorInNetbox(dmi, netbox) -> bool:
+    '''
+    Returns true if the vendor listed in the dmi tables matches any vendor that is in Netbox.
+    '''
+    dmi_vendor = dmi.manufacturer().lower()
+    match = False
+    for vendor in netbox.get_manufacturers():
+        if dmi_vendor == (vendor.get('name')).lower():
+            match = True
+            break
+    return match
+
+def checkVendorInDTLRepo(dmi, vendors) -> bool:
+    '''
+    Returns true if the vendor listed in the dmi tables matches any vendor in the list of vendors provided by the device-type library repo.
+    '''
+    dmi_vendor = dmi.manufacturer().lower()
+    match = False
+    for vendor in vendors:
+        if dmi_vendor == (vendor.get('name')).lower():
+            match = True
+            break
+    return match
+
 def main():
     my_device = DeviceType()
     startTime = datetime.now()
@@ -109,20 +141,22 @@ def main():
     netbox = NetBox(settings)
     files, vendors = settings.dtl_repo.get_devices(
         f'{settings.dtl_repo.repo_path}/device-types/', args.vendors)
-
+    repo_vendors = vendors
+    nb_vendors = netbox.get_manufacturers()
     settings.handle.log(f'{len(vendors)} Vendors Found')
-    # device_types = settings.dtl_repo.parse_files(files, slugs=args.slugs)
-    # settings.handle.log(f'{len(device_types)} Device-Types Found')
+    device_types = settings.dtl_repo.parse_files(files, slugs=args.slugs)
+    settings.handle.log(f'{len(device_types)} Device-Types Found')
+
     # Commented to not create vendors and device_types on Netbox yet.
     # netbox.create_manufacturers(vendors)
     # netbox.create_device_types(device_types)
+    
     print("Debug: -----")
     match = boolVendorMatch(dmi, vendors)
     print(f'Vendor Match: {match}')
-    filename = HardwareInfo().node + '.yaml'
-    with open(filename, 'w') as file:
-        yaml.dump(my_device.getYAML(), file, sort_keys=False, explicit_start=True)
-    print('YAML file created')
+    matchedVendor = getMatchedVendor(dmi, vendors)
+    print(f'Matched Vendor: {matchedVendor}')
+    #saveToYAML(my_device)
     if netbox.modules:
         settings.handle.log("Modules Enabled. Creating Modules...")
         files, vendors = settings.dtl_repo.get_devices(
