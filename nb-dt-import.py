@@ -21,10 +21,8 @@ def main():
     settings.handle.log(f'{len(vendors)} Vendors Found')
     device_types = settings.dtl_repo.parse_files(files, slugs=args.slugs)
     settings.handle.log(f'{len(device_types)} Device-Types Found')
-
-    # Commented to not create vendors and device_types on Netbox yet.
-    # netbox.create_manufacturers(vendors)
-    # netbox.create_device_types(device_types)
+    netbox.create_manufacturers(vendors)
+    netbox.create_device_types(device_types)
 
     if netbox.modules:
         settings.handle.log("Modules Enabled. Creating Modules...")
@@ -33,9 +31,8 @@ def main():
         settings.handle.log(f'{len(vendors)} Module Vendors Found')
         module_types = settings.dtl_repo.parse_files(files, slugs=args.slugs)
         settings.handle.log(f'{len(module_types)} Module-Types Found')
-        # Commented to not create module_types yet.
-        # netbox.create_manufacturers(vendors)
-        # netbox.create_module_types(module_types)
+        netbox.create_manufacturers(vendors)
+        netbox.create_module_types(module_types)
 
     settings.handle.log('---')
     settings.handle.verbose_log(
